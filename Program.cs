@@ -5,6 +5,7 @@ namespace ProjectOOPw68340
     internal class Program
     {
         static Queue<Orders> KolejkaZamowien = new Queue<Orders>();
+        static Queue<VipOrders> VipKolejkaZamowiem = new Queue<VipOrders>();
         static List<Product> Produkty = new List<Product>();
         static List<Customer> Klienci = new List<Customer>();
         static List<PremiumCustomer> PremiumKlienci = new List<PremiumCustomer>();
@@ -238,7 +239,7 @@ namespace ProjectOOPw68340
                 Console.WriteLine("Podaj ID produktu do zamówienia:");
                 int WybranyProductID =  int.Parse(Console.ReadLine());
                 Product ZamówionyProduct = Produkty.Find(p => p.ProductID == WybranyProductID);
-                if (WybranyProductID == null) 
+                if (ZamówionyProduct == null) 
                 {
                     Console.WriteLine("Product o podanym ID nie znaleziony!");
                     return;
@@ -248,19 +249,31 @@ namespace ProjectOOPw68340
                 Console.WriteLine("Podaj ID Klienta do zamówienia:");
                 int WybranyKlientID = int.Parse(Console.ReadLine());
                 Customer WybranyKlient = Klienci.Find(k => k.CustomerID == WybranyKlientID);
-                if (WybranyKlientID == null)
+                if (WybranyKlient == null)
                 {
-                    Console.WriteLine("Klient o podanym ID nie znaleziony!");
-                    return;
-                }
-                Orders Zamowienie = new Orders
-                {
-                    Product = ZamówionyProduct,
-                    Customer = WybranyKlient
-                };
+                    PremiumCustomer WybranyVIPKlient = PremiumKlienci.Find(pk => pk.CustomerID == WybranyKlientID);
+                    VipOrders ZamowienieVIP = new VipOrders
+                    {
+                        Product = ZamówionyProduct,
+                        PremiumCustomer = WybranyVIPKlient
+                    };
+                    VipKolejkaZamowiem.Enqueue(ZamowienieVIP);
+                    Console.WriteLine("Zamówienie dodane pomyślnie.");
 
-                KolejkaZamowien.Enqueue(Zamowienie);
-                Console.WriteLine("Zamówienie dodane pomyślnie.");
+
+                }
+                else
+                {
+                    Orders Zamowienie = new Orders
+                    {
+                        Product = ZamówionyProduct,
+                        Customer = WybranyKlient
+                    };
+                    KolejkaZamowien.Enqueue(Zamowienie);
+                    Console.WriteLine("Zamówienie dodane pomyślnie.");
+                }
+
+
             }
             static void WyswietlZamowienie()
             {
@@ -268,11 +281,14 @@ namespace ProjectOOPw68340
                 {
                     Console.WriteLine($" Zamówienie o ID: {zamowienia.OrderID} :\n Klient : ID - {zamowienia.Customer.CustomerID}, Imię - {zamowienia.Customer.Name}, Wiek - {zamowienia.Customer.Age};\n Zamówiony produkt : ID - {zamowienia.Product.ProductID}, Nazwa - {zamowienia.Product.Name}, Cena - {zamowienia.Product.PriceOfProduct};   ");
                 }
+                foreach (var zamowieniaVIP in VipKolejkaZamowiem)
+                {
+                    Console.WriteLine($" Zamówienie o ID: {zamowieniaVIP.OrderID} :\n Klient : ID - {zamowieniaVIP.PremiumCustomer.CustomerID}, Imię - {zamowieniaVIP.PremiumCustomer.Name}, Wiek - {zamowieniaVIP.PremiumCustomer.Age}, Status - {zamowieniaVIP.PremiumCustomer.MembershipLevel};\n Zamówiony produkt : ID - {zamowieniaVIP.Product.ProductID}, Nazwa - {zamowieniaVIP.Product.Name}, Cena - {zamowieniaVIP.Product.PriceOfProduct}, Istnieje możliwość rabatu - {zamowieniaVIP.PremiumCustomer.Discount}%;   ");
+
+                }
             }
         }
         }
-
-
         class TotalID
     {
         public int ProductID;
@@ -318,6 +334,18 @@ namespace ProjectOOPw68340
         public Product Product { get; set; }
         public Customer Customer { get; set; }
         public Orders()
+        {
+            CurentOrderID++;
+            OrderID = CurentOrderID;
+        }
+    }
+    class VipOrders : TotalID
+    {
+        protected static int CurentOrderID;
+        public Product Product { get; set; }
+        public PremiumCustomer PremiumCustomer { get; set; }
+
+        public VipOrders()
         {
             CurentOrderID++;
             OrderID = CurentOrderID;
