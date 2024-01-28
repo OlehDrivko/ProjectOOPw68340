@@ -6,7 +6,48 @@ namespace ProjectOOPw68340
     {
         static void Main(string[] args)
         {
+            while (true)
+            {
+                Console.WriteLine("Menu:");
+                Console.WriteLine("1. Dodaj Product");
+                Console.WriteLine("2. Dodaj Klienta");
+                Console.WriteLine("3. Dodaj Zamówienie");
+                Console.WriteLine("4. Zobacz zamówienia");
+                Console.WriteLine("5. Przetwórz zamówienie");
+                Console.WriteLine("6. Wejśzie");
 
+                int choice = GetUserChoice();
+
+                switch (choice)
+                {
+                    case 1:
+                        
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        Environment.Exit(0);
+                        break;
+                    default:
+                        Console.WriteLine("Zły wybór. Spróbuj ponownie.");
+                        break;
+                }
+            }
+            static int GetUserChoice()
+            {
+                int choice;
+                while (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    Console.WriteLine("Wpisz numer opcji.");
+                }
+                return choice;
+            }
         }
     }
 
@@ -32,6 +73,7 @@ namespace ProjectOOPw68340
         }
     }
 
+
     class Customer : TotalID
     {
         protected int CurentCustomerID;
@@ -45,6 +87,18 @@ namespace ProjectOOPw68340
             CustomerID = CurentCustomerID;
         }
     }
+    class PremiumCustomer : Customer
+    {
+        public string MembershipLevel { get; set; }
+        public double Discount { get; set; }
+
+        public PremiumCustomer(string customerName, int customerAge, string membershipLevel, double discount) : base(customerName, customerAge)
+        {
+            MembershipLevel = membershipLevel;
+            Discount = discount;
+        }
+    }
+
 
     class Orders : TotalID
     {
