@@ -1,4 +1,6 @@
-﻿namespace ProjectOOPw68340
+﻿using System.Collections;
+
+namespace ProjectOOPw68340
 {
     internal class Program
     {
@@ -34,10 +36,7 @@
                         ZapiszDane();
                         break;
                     case 2:
-                            foreach (var produkt in Produkty)
-                            {
-                            Console.WriteLine($"Product ID: {produkt.ProductID}, Name: {produkt.Name}, Price: {produkt.PriceOfProduct}");
-                            }
+                        WyswietlProdukty();
                         break;
                     case 3:
                         DodajKlienta();
@@ -48,26 +47,42 @@
                         ZapiszDane();
                         break;
                     case 5:
-                        foreach (var klient in Klienci)
-                        {
-                            Console.WriteLine($"Customer ID: {klient.CustomerID};\n Name: {klient.Name};\n Age: {klient.Age};");
-                            Console.WriteLine("--------------------------");
-                        }
-                        foreach (var PremiumKlienci in PremiumKlienci)
-                        {
-                            Console.WriteLine($"VIP Customer ID: {PremiumKlienci.CustomerID};\n Name: {PremiumKlienci.Name};\n Age: {PremiumKlienci.Age};\n MembershipLevel: {PremiumKlienci.MembershipLevel};\n Discount: {PremiumKlienci.Discount}%; ");
-                            Console.WriteLine("--------------------------");
-
-                        }
+                        WyswietlKlientów();
                         break;
                     case 6:
+                        DodajZamowienie();
+                        ZapiszDane();
                         break;
                     case 7:
+                        WyswietlZamowienie();
+                        break;
+                    case 9:
                         Environment.Exit(0);
                         break;
                     default:
                         Console.WriteLine("Zły wybór. Spróbuj ponownie.");
                         break;
+                }
+            }
+            static void WyswietlProdukty()
+            {
+                foreach (var produkt in Produkty)
+                {
+                    Console.WriteLine($"Product ID: {produkt.ProductID}, Name: {produkt.Name}, Price: {produkt.PriceOfProduct}");
+                }
+            }
+            static void WyswietlKlientów()
+            {
+                foreach (var klient in Klienci)
+                {
+                    Console.WriteLine($"Customer ID: {klient.CustomerID};\n Name: {klient.Name};\n Age: {klient.Age};");
+                    Console.WriteLine("--------------------------");
+                }
+                foreach (var PremiumKlienci in PremiumKlienci)
+                {
+                    Console.WriteLine($"VIP Customer ID: {PremiumKlienci.CustomerID};\n Name: {PremiumKlienci.Name};\n Age: {PremiumKlienci.Age};\n MembershipLevel: {PremiumKlienci.MembershipLevel};\n Discount: {PremiumKlienci.Discount}%; ");
+                    Console.WriteLine("--------------------------");
+
                 }
             }
             static int GetUserChoice()
@@ -141,6 +156,13 @@
                         pisarz.WriteLine($"{vipklient.CustomerID},{vipklient.Name},{vipklient.Age},{vipklient.MembershipLevel},{vipklient.Discount}");
                     }
                 }
+                using (StreamWriter pisarz = new StreamWriter("zamowienia.txt"))
+                {
+                    foreach (var zamowienie in KolejkaZamowien)
+                    {
+                        pisarz.WriteLine($"{zamowienie.OrderID},{zamowienie.Product.ProductID},{zamowienie.Customer.CustomerID}");
+                    }
+                }
 
 
             }
@@ -158,9 +180,96 @@
                         Produkty.Add(new Product { ProductID = id, Name = nazwa, PriceOfProduct = cena });
                     }
                 }
+                if (File.Exists("klienci.txt"))
+                {
+                    string[] linieKlientow = File.ReadAllLines("klienci.txt");
+                    foreach (var linia in linieKlientow)
+                    {
+                        string[] czesci = linia.Split(',');
+                        int id = int.Parse(czesci[0]);
+                        string nazwa = czesci[1];
+                        double age = double.Parse(czesci[2]);
+                        Klienci.Add(new Customer { CustomerID = id, Name = nazwa, Age = age,  });
+                    }
+                }
+                if (File.Exists("klienciVIP.txt"))
+                {
+                    string[] linieVIPKlientow = File.ReadAllLines("klienciVIP.txt");
+                    foreach (var linia in linieVIPKlientow)
+                    {
+                        string[] czesci = linia.Split(',');
+                        int id = int.Parse(czesci[0]);
+                        string nazwa = czesci[1];
+                        double age = double.Parse(czesci[2]);
+                        string membershipLevel = czesci[3];
+                        double discount = double.Parse(czesci[4]);
+
+                        PremiumKlienci.Add(new PremiumCustomer { CustomerID = id, Name = nazwa, Age = age, MembershipLevel = membershipLevel, Discount = discount });
+                    }
+                }
+
+                if (File.Exists("zamowienia.txt"))
+                {
+                    string[] linieZamowien = File.ReadAllLines("zamowienia.txt");
+                    foreach (var linia in linieZamowien)
+                    {
+                        string[] czesci = linia.Split(',');
+                        int idZamowienia = int.Parse(czesci[0]);
+                        int idProduktu = int.Parse(czesci[1]);
+                        int idKlienta = int.Parse(czesci[2]);
+
+                        Product produkt = Produkty.Find(p => p.ProductID == idProduktu);
+                        Customer klient = Klienci.Find(c => c.CustomerID == idKlienta);
+
+                        KolejkaZamowien.Enqueue(new Orders { OrderID = idZamowienia, Product = produkt, Customer = klient});
+                    }
+                }
 
             }
+            static void DodajZamowienie()
+            {
+                if (Produkty.Count == 0 || Klienci.Count == 0 )
+                {
+                    Console.WriteLine("Dodaj przynajmniej jeden produkt i jednego klienta.");
+                    return;
+                }
+                Console.WriteLine("Lista produktów:");
+                WyswietlProdukty();
+                Console.WriteLine("Podaj ID produktu do zamówienia:");
+                int WybranyProductID =  int.Parse(Console.ReadLine());
+                Product ZamówionyProduct = Produkty.Find(p => p.ProductID == WybranyProductID);
+                if (WybranyProductID == null) 
+                {
+                    Console.WriteLine("Product o podanym ID nie znaleziony!");
+                    return;
+                }
+                Console.WriteLine("Lista Klientów:");
+                WyswietlKlientów();
+                Console.WriteLine("Podaj ID Klienta do zamówienia:");
+                int WybranyKlientID = int.Parse(Console.ReadLine());
+                Customer WybranyKlient = Klienci.Find(k => k.CustomerID == WybranyKlientID);
+                if (WybranyKlientID == null)
+                {
+                    Console.WriteLine("Klient o podanym ID nie znaleziony!");
+                    return;
+                }
+                Orders Zamowienie = new Orders
+                {
+                    Product = ZamówionyProduct,
+                    Customer = WybranyKlient
+                };
+
+                KolejkaZamowien.Enqueue(Zamowienie);
+                Console.WriteLine("Zamówienie dodane pomyślnie.");
             }
+            static void WyswietlZamowienie()
+            {
+                foreach (var zamowienia in KolejkaZamowien)
+                {
+                    Console.WriteLine($" Zamówienie o ID: {zamowienia.OrderID} :\n Klient : ID - {zamowienia.Customer.CustomerID}, Imię - {zamowienia.Customer.Name}, Wiek - {zamowienia.Customer.Age};\n Zamówiony produkt : ID - {zamowienia.Product.ProductID}, Nazwa - {zamowienia.Product.Name}, Cena - {zamowienia.Product.PriceOfProduct};   ");
+                }
+            }
+        }
         }
 
 
@@ -208,12 +317,10 @@
         protected static int CurentOrderID;
         public Product Product { get; set; }
         public Customer Customer { get; set; }
-        public Orders(Product product, Customer customer)
+        public Orders()
         {
             CurentOrderID++;
             OrderID = CurentOrderID;
-            Product = product;
-            Customer = customer;
         }
     }
 }
