@@ -1,7 +1,4 @@
-﻿using ProjectOOPw68340;
-using System.Xml.Linq;
-
-namespace ProjectOOPw68340
+﻿namespace ProjectOOPw68340
 {
     internal class Program
     {
@@ -12,7 +9,7 @@ namespace ProjectOOPw68340
         static void Main(string[] args)
         {
 
-
+            WczytajDAne();
             while (true)
             {
                 Console.WriteLine("Menu:");
@@ -34,6 +31,7 @@ namespace ProjectOOPw68340
                 {
                     case 1:
                         DodajProduct();
+                        ZapiszDane();
                         break;
                     case 2:
                             foreach (var produkt in Produkty)
@@ -43,18 +41,23 @@ namespace ProjectOOPw68340
                         break;
                     case 3:
                         DodajKlienta();
+                        ZapiszDane();
                         break;
                     case 4:
                         DodajVIPklienta();
+                        ZapiszDane();
                         break;
                     case 5:
                         foreach (var klient in Klienci)
                         {
-                            Console.WriteLine($"Customer ID: {klient.CustomerID}, Name: {klient.Name}, Age: {klient.Age}");
+                            Console.WriteLine($"Customer ID: {klient.CustomerID};\n Name: {klient.Name};\n Age: {klient.Age};");
+                            Console.WriteLine("--------------------------");
                         }
                         foreach (var PremiumKlienci in PremiumKlienci)
                         {
-                            Console.WriteLine($"VIP Customer ID: {PremiumKlienci.CustomerID},\n Name: {PremiumKlienci.Name},\n Age: {PremiumKlienci.Age},\n MembershipLevel: {PremiumKlienci.MembershipLevel},\n Discount: {PremiumKlienci.Discount} % ");
+                            Console.WriteLine($"VIP Customer ID: {PremiumKlienci.CustomerID};\n Name: {PremiumKlienci.Name};\n Age: {PremiumKlienci.Age};\n MembershipLevel: {PremiumKlienci.MembershipLevel};\n Discount: {PremiumKlienci.Discount}%; ");
+                            Console.WriteLine("--------------------------");
+
                         }
                         break;
                     case 6:
@@ -76,7 +79,6 @@ namespace ProjectOOPw68340
                 }
                 return choice;
             }
-
             static void DodajProduct()
             {
                 Console.Write("Podaj nazwę produktu: ");
@@ -115,13 +117,54 @@ namespace ProjectOOPw68340
                 PremiumKlienci.Add(premiumCustomer);
                 Console.WriteLine(" VIP Klient dodany pomyślnie. ");
             }
+            static void ZapiszDane()
+            {
+                using (StreamWriter pisarz = new StreamWriter("produkty.txt"))
+                {
+                    foreach (var produkt in Produkty)
+                    {
+                        pisarz.WriteLine($"{produkt.ProductID},{produkt.Name},{produkt.PriceOfProduct}");
+                    }
+                }
+
+                using (StreamWriter pisarz = new StreamWriter("klienci.txt"))
+                {
+                    foreach (var klient in Klienci)
+                    {
+                        pisarz.WriteLine($"{klient.CustomerID},{klient.Name},{klient.Age}");
+                    }
+                }
+                using (StreamWriter pisarz = new StreamWriter("klienciVIP.txt"))
+                {
+                    foreach (var vipklient in PremiumKlienci)
+                    {
+                        pisarz.WriteLine($"{vipklient.CustomerID},{vipklient.Name},{vipklient.Age},{vipklient.MembershipLevel},{vipklient.Discount}");
+                    }
+                }
 
 
+            }
+            static void WczytajDAne()
+            {
+                if (File.Exists("produkty.txt"))
+                {
+                    string[] linieProduktow = File.ReadAllLines("produkty.txt");
+                    foreach (var linia in linieProduktow)
+                    {
+                        string[] czesci = linia.Split(',');
+                        int id = int.Parse(czesci[0]);
+                        string nazwa = czesci[1];
+                        decimal cena = decimal.Parse(czesci[2]);
+                        Produkty.Add(new Product { ProductID = id, Name = nazwa, PriceOfProduct = cena });
+                    }
+                }
 
+            }
+            }
         }
-    }
 
-    class TotalID
+
+        class TotalID
     {
         public int ProductID;
         public int CustomerID ;
