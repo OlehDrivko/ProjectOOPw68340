@@ -24,9 +24,11 @@ namespace ProjectOOPw68340
                 Console.WriteLine("5. Zobacz Klientów");
                 Console.WriteLine("--------------------------");
                 Console.WriteLine("6. Dodaj Zamówienie");
-                Console.WriteLine("7. Zobacz zamówienia");
-                Console.WriteLine("8. Przetwórz zamówienie");
-                Console.WriteLine("9. Wejśzie");
+                Console.WriteLine("7. Dodaj VIP Zamówienie");
+                Console.WriteLine("8. Zobacz zamówienia");
+                Console.WriteLine("9. Przetwórz zamówienie");
+                Console.WriteLine("10. Przetwórz VIP zamówienie");
+                Console.WriteLine("11. Wejśzie");
 
                 int choice = GetUserChoice();
 
@@ -48,16 +50,32 @@ namespace ProjectOOPw68340
                         ZapiszDane();
                         break;
                     case 5:
+                        Console.WriteLine("Klienci:");
                         WyswietlKlientów();
+                        Console.WriteLine("VIP Klienci:");
+                        WyswitlVIPKlientów();
                         break;
                     case 6:
                         DodajZamowienie();
                         ZapiszDane();
                         break;
                     case 7:
+                        DodajVIPZamowienie();
+                        ZapiszDane();
+                        break;
+                    case 8:
                         WyswietlZamowienie();
                         break;
                     case 9:
+                        ProcessOrders();
+                        ZapiszDane();
+                        break;
+                    case 10:
+                        ProcessVIPOrders();
+                        ZapiszDane();
+                        break;
+                    case 11:
+                        ZapiszDane();
                         Environment.Exit(0);
                         break;
                     default:
@@ -79,6 +97,9 @@ namespace ProjectOOPw68340
                     Console.WriteLine($"Customer ID: {klient.CustomerID};\n Name: {klient.Name};\n Age: {klient.Age};");
                     Console.WriteLine("--------------------------");
                 }
+            }
+            static void WyswitlVIPKlientów()
+            {
                 foreach (var PremiumKlienci in PremiumKlienci)
                 {
                     Console.WriteLine($"VIP Customer ID: {PremiumKlienci.CustomerID};\n Name: {PremiumKlienci.Name};\n Age: {PremiumKlienci.Age};\n MembershipLevel: {PremiumKlienci.MembershipLevel};\n Discount: {PremiumKlienci.Discount}%; ");
@@ -229,7 +250,7 @@ namespace ProjectOOPw68340
             }
             static void DodajZamowienie()
             {
-                if (Produkty.Count == 0 || Klienci.Count == 0 )
+                if (Produkty.Count == 0 || Klienci.Count == 0)
                 {
                     Console.WriteLine("Dodaj przynajmniej jeden produkt i jednego klienta.");
                     return;
@@ -237,9 +258,9 @@ namespace ProjectOOPw68340
                 Console.WriteLine("Lista produktów:");
                 WyswietlProdukty();
                 Console.WriteLine("Podaj ID produktu do zamówienia:");
-                int WybranyProductID =  int.Parse(Console.ReadLine());
+                int WybranyProductID = int.Parse(Console.ReadLine());
                 Product ZamówionyProduct = Produkty.Find(p => p.ProductID == WybranyProductID);
-                if (ZamówionyProduct == null) 
+                if (ZamówionyProduct == null)
                 {
                     Console.WriteLine("Product o podanym ID nie znaleziony!");
                     return;
@@ -249,8 +270,30 @@ namespace ProjectOOPw68340
                 Console.WriteLine("Podaj ID Klienta do zamówienia:");
                 int WybranyKlientID = int.Parse(Console.ReadLine());
                 Customer WybranyKlient = Klienci.Find(k => k.CustomerID == WybranyKlientID);
-                if (WybranyKlient == null)
+                Orders Zamowienie = new Orders
                 {
+                    Product = ZamówionyProduct,
+                    Customer = WybranyKlient
+                };
+                KolejkaZamowien.Enqueue(Zamowienie);
+                Console.WriteLine("Zamówienie dodane pomyślnie.");
+            }
+            static void DodajVIPZamowienie()
+                {
+                    Console.WriteLine("Lista produktów:");
+                    WyswietlProdukty();
+                    Console.WriteLine("Podaj ID produktu do zamówienia:");
+                    int WybranyProductID = int.Parse(Console.ReadLine());
+                    Product ZamówionyProduct = Produkty.Find(p => p.ProductID == WybranyProductID);
+                    if (ZamówionyProduct == null)
+                    {
+                        Console.WriteLine("Product o podanym ID nie znaleziony!");
+                        return;
+                    }
+                    Console.WriteLine("Lista VIP Klientów:");
+                    WyswitlVIPKlientów();
+                    Console.WriteLine("Podaj ID VIP Klienta do zamówienia:");
+                    int WybranyKlientID = int.Parse(Console.ReadLine());
                     PremiumCustomer WybranyVIPKlient = PremiumKlienci.Find(pk => pk.CustomerID == WybranyKlientID);
                     VipOrders ZamowienieVIP = new VipOrders
                     {
@@ -259,22 +302,7 @@ namespace ProjectOOPw68340
                     };
                     VipKolejkaZamowiem.Enqueue(ZamowienieVIP);
                     Console.WriteLine("Zamówienie dodane pomyślnie.");
-
-
                 }
-                else
-                {
-                    Orders Zamowienie = new Orders
-                    {
-                        Product = ZamówionyProduct,
-                        Customer = WybranyKlient
-                    };
-                    KolejkaZamowien.Enqueue(Zamowienie);
-                    Console.WriteLine("Zamówienie dodane pomyślnie.");
-                }
-
-
-            }
             static void WyswietlZamowienie()
             {
                 foreach (var zamowienia in KolejkaZamowien)
@@ -287,39 +315,61 @@ namespace ProjectOOPw68340
 
                 }
             }
-        }
-        }
-        class TotalID
-    {
-        public int ProductID;
-        public int CustomerID ;
-        public int OrderID;
-    }
+            static void ProcessOrders()
+            {
+                if (KolejkaZamowien.Count == 0)
+                {
+                    Console.WriteLine("Niema zamówień.");
+                    return;
+                }
 
+                Orders order = KolejkaZamowien.Dequeue();
+                Console.WriteLine($"Zamówienie Obrobione: Klien: {order.Customer.Name}, Product: {order.Product.Name}, Cena: {order.Product.PriceOfProduct}, ");
+            }
+            static void ProcessVIPOrders()
+            {
+                if (KolejkaZamowien.Count == 0)
+                {
+                    Console.WriteLine("Niema zamówień.");
+                    return;
+                }
+
+                VipOrders Viporder = VipKolejkaZamowiem.Dequeue();
+                Console.WriteLine($"Zamówienie Obrobione: Klien: {Viporder.PremiumCustomer.Name}, Product: {Viporder.Product.Name}, Cena: {Viporder.Product.PriceOfProduct}, Status : {Viporder.PremiumCustomer.MembershipLevel}, Promocja : {Viporder.PremiumCustomer.Discount};");
+            }
+
+        }
+        }
+    class TotalID
+    {
+        private static int currentProductID = 0;
+        private static int currentCustomerID = 0;
+        private static int currentOrderID = 0;
+
+        public int ProductID { get; set; }
+        public int CustomerID { get; set; }
+        public int OrderID { get; set; }
+
+        public TotalID()
+        {
+            ProductID = ++currentProductID;
+            CustomerID = ++currentCustomerID;
+            OrderID = ++currentOrderID;
+        }
+    }
     class Product :  TotalID
     {
         protected static int CurentProductID;
         public string Name { get; set; }
         public decimal PriceOfProduct { get; set; }
 
-        public Product()
-        {
-            CurentProductID++;
-            ProductID = CurentProductID;
-        }
     }
-
-
     class Customer : TotalID
     {
         protected static int CurentCustomerID;
         public string Name { get; set; }
         public double Age { get; set; }
-        public Customer() 
-        {
-            CurentCustomerID++;
-            CustomerID = CurentCustomerID;
-        }
+
     }
     class PremiumCustomer : Customer
     {
@@ -330,25 +380,14 @@ namespace ProjectOOPw68340
 
     class Orders : TotalID
     {
-        protected static int CurentOrderID;
+        public static int CurentOrderID;
         public Product Product { get; set; }
         public Customer Customer { get; set; }
-        public Orders()
-        {
-            CurentOrderID++;
-            OrderID = CurentOrderID;
-        }
     }
     class VipOrders : TotalID
     {
-        protected static int CurentOrderID;
+        public static int CurentVipOrderID;
         public Product Product { get; set; }
         public PremiumCustomer PremiumCustomer { get; set; }
-
-        public VipOrders()
-        {
-            CurentOrderID++;
-            OrderID = CurentOrderID;
-        }
     }
 }
